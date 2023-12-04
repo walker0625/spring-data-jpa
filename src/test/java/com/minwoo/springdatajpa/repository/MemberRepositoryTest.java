@@ -25,4 +25,27 @@ class MemberRepositoryTest {
         assertThat(findedMember.getUsername()).isEqualTo("memberA");
     }
 
+    @Test
+    public void basicCRUD() {
+        Member member1 = new Member("member1");
+        Member member2 = new Member("member2");
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        Member memberf1 = memberRepository.findById(member1.getId()).get();
+        Member memberf2 = memberRepository.findById(member2.getId()).get();
+
+        Assertions.assertThat(member1).isEqualTo(memberf1);
+        Assertions.assertThat(member2).isEqualTo(memberf2);
+
+        long count = memberRepository.count();
+        assertThat(count).isEqualTo(2);
+
+        memberRepository.delete(member1);
+        memberRepository.delete(member2);
+
+        long count2 = memberRepository.count();
+        assertThat(count2).isEqualTo(0);
+    }
+
 }
