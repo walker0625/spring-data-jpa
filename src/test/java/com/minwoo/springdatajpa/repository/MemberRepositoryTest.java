@@ -3,7 +3,10 @@ package com.minwoo.springdatajpa.repository;
 import com.minwoo.springdatajpa.dto.MemberDto;
 import com.minwoo.springdatajpa.entity.Member;
 import com.minwoo.springdatajpa.entity.Team;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +30,9 @@ class MemberRepositoryTest {
 
     @Autowired
     TeamRepository teamRepository;
+
+    @PersistenceContext
+    EntityManager entityManager;
 
     @Test
     void saveAndFind() {
@@ -198,6 +204,97 @@ class MemberRepositoryTest {
         assertThat(memberSlices.getNumber()).isEqualTo(0); // 현재 페이지 번호
         assertThat(memberSlices.isFirst()).isTrue(); // 첫 페이지 여부
         assertThat(memberSlices.hasNext()).isTrue(); // 다음 페이지 존재여부
+    }
+
+    @Test
+    void bulkAgePlus() {
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 20));
+        memberRepository.save(new Member("member5", 20));
+
+        int count = memberRepository.bulkAgePlus(10);
+
+        assertThat(count).isEqualTo(2);
+
+        // bulk 연산 내용을 db에 반영하고 1차 캐시를 날려야
+        // 다시 find 했을 때 data와 동기화가 가능
+        // entityManager.clear();
+
+        assertThat(memberRepository.findMemberByUsername("member1").getAge()).isEqualTo(11);
+    }
+
+    @Test
+    void findMemberLazy() {
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member member1 = new Member("member1", 10, teamA);
+        Member member2 = new Member("member2", 10, teamB);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+        
+        entityManager.flush();
+        entityManager.clear();
+
+        /*
+        List<Member> members = memberRepository.findAll();
+
+        for (Member member : members) {
+            System.out.println("member = " + member);
+            System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+        }
+        */
+
+        Member member = memberRepository.findAllEntityGraphByUsername("member1").get(0);
+        System.out.println("member.getTeam().getName() = " + member.getTeam().getName());
+    }
+
+    @Test
+    void queryHint() {
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        entityManager.flush();
+        entityManager.clear();
+
+        Member member2 = memberRepository.findMemberByUsername(member1.getUsername());
+        member2.setUsername("member2");
+
+        entityManager.flush(); // 더티체킹으로 update -> 원본/변경본 : 2개의 객체가 필요함
+        entityManager.clear();
+
+        // readonly로 가져온 객체라 더티체킹 하지 않음
+        Member member3 = memberRepository.findReadOnlyByUsername(member2.getUsername());
+        member3.setUsername("member3"); // update 되지 않음
+
+        entityManager.flush();
+
+        Member member4 = memberRepository.findMemberByUsername(member3.getUsername());
+
+        System.out.println("member4 = " + member4);
+    }
+
+    @Test
+    void lock() {
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        entityManager.flush();
+        entityManager.clear();
+
+
+        /*
+        select
+                m1_0.member_id,
+                m1_0.age,
+                m1_0.team_id,
+                m1_0.username
+        from
+            member m1_0
+        where
+            m1_0.username=? for update // lock
+         */
+        Member findMember = memberRepository.findLockByUsername("member1");
     }
 
 }
