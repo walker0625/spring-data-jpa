@@ -133,10 +133,10 @@ class MemberRepositoryTest {
         List<Member> aaas = memberRepository.findListByUsername("tt");
         System.out.println("aaas.size() = " + aaas.size()); // 0(null이 아님)
 
-        Member aaa = memberRepository.findMemberByUsername("bbb");
+        Member aaa = memberRepository.findMemberByUsername("tt");
         System.out.println("aaa = " + aaa); // null
 
-        Optional<Member> aaao = memberRepository.findOptionalByUsername("aaa");
+        Optional<Member> aaao = memberRepository.findOptionalByUsername("tt");
         assertThatThrownBy(() -> aaao.get()).isInstanceOf(RuntimeException.class);
     }
 
