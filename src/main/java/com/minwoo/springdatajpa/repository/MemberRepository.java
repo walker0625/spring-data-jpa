@@ -2,6 +2,9 @@ package com.minwoo.springdatajpa.repository;
 
 import com.minwoo.springdatajpa.dto.MemberDto;
 import com.minwoo.springdatajpa.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -39,5 +42,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     // Optional로 반환되기 때문에 null일 경우 처리 추가
     Optional<Member> findOptionalByUsername(String username);
+
+    // countQuery를 분리하여 불필요한 부하 줄임
+    @Query(value = "select m from Member m left join m.team t",
+           countQuery = "select count(m.id) from Member m")
+    Page<Member> findByAge(int age, Pageable pageable);
+
+    Slice<Member> findSliceByAge(int age, Pageable pageable);
 
 }

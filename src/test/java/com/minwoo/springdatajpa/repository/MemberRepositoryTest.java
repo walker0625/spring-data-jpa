@@ -7,6 +7,10 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -138,6 +142,62 @@ class MemberRepositoryTest {
 
         Optional<Member> aaao = memberRepository.findOptionalByUsername("tt");
         assertThatThrownBy(() -> aaao.get()).isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    void paging() {
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        // 0 페이지부터 3개 가져오기
+        int age = 10;
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        Page<Member> memberPages = memberRepository.findByAge(age, pageRequest);
+
+        // api 반환시 dto로 변환하여 return
+        Page<MemberDto> memberDtos = memberPages.map(member -> new MemberDto(member.getId(), member.getUsername(), null));
+
+        List<Member> content = memberPages.getContent();
+        long totalElements = memberPages.getTotalElements();
+
+        assertThat(totalElements).isEqualTo(5); // 총 요소 갯수
+        assertThat(content.size()).isEqualTo(3); // 가져온 요소 갯수
+
+        assertThat(memberPages.getTotalPages()).isEqualTo(2); // 총 페이지 수
+        assertThat(memberPages.getNumber()).isEqualTo(0); // 현재 페이지 번호
+
+        assertThat(memberPages.isFirst()).isTrue(); // 첫 페이지 여부
+        assertThat(memberPages.hasNext()).isTrue(); // 다음 페이지 존재여부
+    }
+
+    @Test
+    void slice() {
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        // 0 페이지부터 3개 가져오기
+        int age = 10;
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        // 설정한 요소 갯수(3) + 1개를 가져와서 다음 페이지 여부가 있는지를 판단
+        Slice<Member> memberSlices = memberRepository.findSliceByAge(age, pageRequest);
+
+        List<Member> content = memberSlices.getContent();
+        //long totalElements = memberSlices.getTotalElements(); Slice는 total을 가져오지 않음
+        //assertThat(totalElements).isEqualTo(5); // 총 요소 갯수
+        //assertThat(memberSlices.getTotalPages()).isEqualTo(2); // 총 페이지 수
+
+        assertThat(content.size()).isEqualTo(3); // 가져온 요소 갯수
+        assertThat(memberSlices.getNumber()).isEqualTo(0); // 현재 페이지 번호
+        assertThat(memberSlices.isFirst()).isTrue(); // 첫 페이지 여부
+        assertThat(memberSlices.hasNext()).isTrue(); // 다음 페이지 존재여부
     }
 
 }
