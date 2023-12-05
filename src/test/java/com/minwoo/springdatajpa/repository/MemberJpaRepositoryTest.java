@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -47,6 +49,26 @@ class MemberJpaRepositoryTest {
 
         long count2 = memberJpaRepository.count();
         assertThat(count2).isEqualTo(0);
+    }
+    
+    @Test
+    void findUserByUsernameAndAge() {
+        memberJpaRepository.save(new Member("aaa", 10));
+        memberJpaRepository.save(new Member("aaa", 20));
+        
+        List<Member> memberList = memberJpaRepository.findByUsernameAndAgeGreaterThan("aaa", 10);
+        for (Member member : memberList) {
+            System.out.println("member = " + member);
+        }
+    }
+
+    @Test
+    void namedQuery() {
+        memberJpaRepository.save(new Member("aaa", 10));
+        memberJpaRepository.save(new Member("bbb", 20));
+        List<Member> aaa = memberJpaRepository.findByUsernameUseNamedQuery("aaa");
+
+        assertThat("aaa").isEqualTo(aaa.get(0).getUsername());
     }
 
 }
