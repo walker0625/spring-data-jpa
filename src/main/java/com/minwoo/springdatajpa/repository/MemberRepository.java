@@ -4,7 +4,6 @@ import com.minwoo.springdatajpa.dto.MemberDto;
 import com.minwoo.springdatajpa.entity.Member;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -14,11 +13,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberCustomRepository {
 
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
 
     @Query(name = "Member.findByUsername") // 생략 가능(@NamedQuery 안의 name을 먼저 찾음)
+
     List<Member> findByUsername(@Param("username") String username);
 
     @Query("select m from Member m where m.username = :username and m.age > :age")

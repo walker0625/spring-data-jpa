@@ -34,6 +34,9 @@ class MemberRepositoryTest {
     @PersistenceContext
     EntityManager entityManager;
 
+    @Autowired
+    MemberQueryRepository memberQueryRepository;
+
     @Test
     void saveAndFind() {
         Member savedMember = memberRepository.save(new Member("memberA"));
@@ -295,6 +298,30 @@ class MemberRepositoryTest {
             m1_0.username=? for update // lock
          */
         Member findMember = memberRepository.findLockByUsername("member1");
+    }
+    
+    @Test
+    void findCustom() {
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        Member member2 = memberRepository.save(new Member("member2", 20));
+
+        List<Member> membersByCustom = memberRepository.findMembersByCustom();
+
+        for (Member member : membersByCustom) {
+            System.out.println("member = " + member);
+        }
+    }
+
+    @Test
+    void findQuery() {
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        Member member2 = memberRepository.save(new Member("member2", 20));
+
+        List<Member> membersByQuery = memberQueryRepository.findMemberByQuery();
+
+        for (Member member : membersByQuery) {
+            System.out.println("member = " + member);
+        }
     }
 
 }
