@@ -324,4 +324,23 @@ class MemberRepositoryTest {
         }
     }
 
+    @Test
+    void baseEntity() throws InterruptedException {
+        Member member1 = memberRepository.save(new Member("member1", 10));
+
+        member1.setUsername("member3");
+
+        Thread.sleep(1000);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Member> membersByQuery = memberQueryRepository.findMemberByQuery();
+
+        System.out.println("membersByQuery.get(0).getCreatedDate() = " + membersByQuery.get(0).getCreatedDate());
+        System.out.println("membersByQuery.get(0).getUpdatedDate() = " + membersByQuery.get(0).getUpdatedDate());
+        System.out.println("membersByQuery.get(0).getCreatedBy() = " + membersByQuery.get(0).getCreatedBy());
+        System.out.println("membersByQuery.get(0).getUpdatedBy() = " + membersByQuery.get(0).getUpdatedBy());
+    }
+
 }
