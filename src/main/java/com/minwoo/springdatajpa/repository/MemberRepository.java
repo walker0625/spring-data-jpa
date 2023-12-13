@@ -18,7 +18,6 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberCus
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
 
     @Query(name = "Member.findByUsername") // 생략 가능(@NamedQuery 안의 name을 먼저 찾음)
-
     List<Member> findByUsername(@Param("username") String username);
 
     @Query("select m from Member m where m.username = :username and m.age > :age")

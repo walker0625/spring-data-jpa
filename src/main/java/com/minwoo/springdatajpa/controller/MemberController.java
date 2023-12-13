@@ -38,7 +38,7 @@ public class MemberController {
         return memberRepository.findAll(memberPageable).map(MemberDto::new); // m -> new MemberDto(m)
     }
 
-    @PostConstruct
+    //@PostConstruct
     public void init() {
         for (int i = 0; i < 100; i++) {
             memberRepository.save(new Member("member" + i));
