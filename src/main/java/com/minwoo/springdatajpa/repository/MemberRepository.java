@@ -80,4 +80,13 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberCus
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Member findLockByUsername(String username);
 
+    // 반환 타임이 제한적(Object 등) / 동적 쿼리 불가 / 런타임에 에러 확인 등 -> (jdbcTemplate/mybatis 추천)
+    @Query(value = "select member_id from member where username = ? and age = ?", nativeQuery = true)
+    String findByNativeQuery(String username, int age);
+
+    @Query(value = "select m.member_id as id, m.username, t.name as teamName from Member m left join Team t on m.team_id = t.team_id",
+           countQuery = "select count(*) from Member",
+           nativeQuery = true)
+    Page<MemberProjection> findByNativeQueryByProjection(Pageable pageable);
+
 }

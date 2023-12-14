@@ -343,4 +343,15 @@ class MemberRepositoryTest {
         System.out.println("membersByQuery.get(0).getUpdatedBy() = " + membersByQuery.get(0).getUpdatedBy());
     }
 
+    @Test
+    void nativeQuery() {
+        String id = memberRepository.findByNativeQuery("member1", 1);
+        System.out.println("member1 = " + id);
+    }
+
+    @Test
+    void nativeQueryByProjection() {
+        Page<MemberProjection> byNativeQueryByProjection = memberRepository.findByNativeQueryByProjection(PageRequest.of(0, 5));
+    }
+
 }
